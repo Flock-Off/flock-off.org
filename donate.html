@@ -354,17 +354,16 @@
       <div class="section-label">Support the Fight</div>
       <h1>Fund the resistance</h1>
       <p>
-        Flock Off is a 501(c)(4) social welfare organization. Donations support our advocacy,
-        organizing, and outreach — not tax-deductible, but every dollar goes directly to the fight.
+        Every dollar goes directly to establishing new chapters, expanding our infrastructure, and fighting mass surveillance programs across the country.
       </p>
 
       <div class="amount-grid">
-        <button class="amount-btn" onclick="selectAmount(this, '10')">$10</button>
+        <button class="amount-btn" onclick="selectAmount(this, '5')">$5</button>
+        <button class="amount-btn selected" onclick="selectAmount(this, '10')">$10</button>
         <button class="amount-btn" onclick="selectAmount(this, '25')">$25</button>
-        <button class="amount-btn selected" onclick="selectAmount(this, '50')">$50</button>
+        <button class="amount-btn" onclick="selectAmount(this, '50')">$50</button>
         <button class="amount-btn" onclick="selectAmount(this, '100')">$100</button>
         <button class="amount-btn" onclick="selectAmount(this, '250')">$250</button>
-        <button class="amount-btn" onclick="selectAmount(this, '500')">$500</button>
       </div>
 
       <div class="custom-input-wrap">
@@ -390,7 +389,7 @@
   <script>
     const STRIPE_LINK = '#'; // Replace with your Stripe Payment Link URL
 
-    let selectedAmount = '50';
+    let selectedAmount = '10';
 
     function selectAmount(btn, amount) {
       document.querySelectorAll('.amount-btn').forEach(b => b.classList.remove('selected'));
@@ -422,7 +421,7 @@
     }
 
     // Init
-    updateBtn('50');
+    updateBtn('10');
   </script>
 
   <script>
