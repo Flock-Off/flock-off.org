@@ -248,6 +248,17 @@
 
     .state-strip:hover .state-track { animation-play-state: paused; }
 
+    @media (max-width: 768px) {
+      .state-strip {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        cursor: grab;
+      }
+      .state-strip::-webkit-scrollbar { display: none; }
+      .state-track { animation: none !important; }
+    }
+
     .state-item {
       display: inline-flex;
       flex-direction: column;
@@ -734,6 +745,9 @@
       pointer-events: none;
       line-height: 1;
       transform: rotate(180deg);
+      transform-origin: center center;
+      position: relative;
+      top: -2px;
     }
 
     .logo-arrow.open { transform: rotate(0deg); }
