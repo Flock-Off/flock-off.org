@@ -259,14 +259,16 @@
     .logo-arrow {
       display: none;
       color: var(--muted);
-      font-size: 0.65rem;
-      margin-left: 0.3rem;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-left: 0.4rem;
       transition: transform 0.25s;
       pointer-events: none;
       line-height: 1;
+      transform: rotate(180deg);
     }
 
-    .logo-arrow.open { transform: rotate(180deg); }
+    .logo-arrow.open { transform: rotate(0deg); }
 
     @media (max-width: 768px) { .logo-arrow { display: inline-block; } }
 
@@ -306,7 +308,7 @@
   <nav>
     <div class="logo-wrap">
       <a href="index.html" class="logo" id="logoToggle">Flock<span>Off</span></a>
-      <span class="logo-arrow" id="logoArrow">▾</span>
+      <span class="logo-arrow" id="logoArrow">^</span>
       <div class="logo-dropdown" id="logoDropdown">
         <a href="index.html">Home</a>
         <a href="index.html#problem">The Problem</a>
