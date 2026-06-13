@@ -1,0 +1,155 @@
+<!-- ============================================================
+     CCTV BACKGROUND SNIPPET
+     To re-enable: tell Claude "bring the security cameras back"
+
+     Requires 3 insertions into index.html:
+     1. CSS block  → paste inside <style> (marked CCTV CANVAS)
+     2. HTML element → first child inside <section class="hero">
+     3. <script> block → paste just before </body>
+     ============================================================ -->
+
+
+<!-- 1. CSS — paste inside <style> -->
+<style-snippet>
+    /* CCTV CANVAS */
+    #cctv-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.22;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .hero > *:not(canvas) {
+      position: relative;
+      z-index: 1;
+    }
+</style-snippet>
+
+
+<!-- 2. HTML — first line inside <section class="hero"> -->
+<html-snippet>
+    <canvas id="cctv-bg"></canvas>
+</html-snippet>
+
+
+<!-- 3. SCRIPT — paste just before </body> -->
+<script-snippet>
+  <script>
+  (function() {
+    const canvas = document.getElementById('cctv-bg');
+    const ctx = canvas.getContext('2d');
+    const COLS = 3, ROWS = 2;
+    let W, H, cW, cH, frame = 0;
+
+    function resize() {
+      W = canvas.width  = canvas.offsetWidth;
+      H = canvas.height = canvas.offsetHeight;
+      cW = Math.floor(W / COLS);
+      cH = Math.floor(H / ROWS);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    const cams = Array.from({ length: COLS * ROWS }, (_, i) => ({
+      noise: Math.random() * 1000,
+      camX: 0.3 + Math.random() * 0.4,
+      camY: 0.2 + Math.random() * 0.4,
+      pan: (Math.random() - 0.5) * 0.0003,
+      zoom: 1 + Math.random() * 0.4,
+      label: ['CAM ' + String(i + 1).padStart(2,'0'), 'ENTRANCE ' + (i+1), 'SECTOR ' + String.fromCharCode(65 + i), 'PERIMETER', 'LOBBY', 'ROOF'][i % 6],
+      glitch: 0,
+      glitchTimer: Math.floor(Math.random() * 200),
+    }));
+
+    function noise2d(x, y, t) {
+      return Math.sin(x * 3.1 + t) * Math.cos(y * 2.7 - t * 0.7) * 0.5 +
+             Math.sin(x * 7.3 - t * 1.3) * Math.sin(y * 5.1 + t * 0.9) * 0.3 +
+             Math.sin((x + y) * 4.2 + t * 0.4) * 0.2;
+    }
+
+    function drawCell(idx, cx, cy) {
+      const cam = cams[idx];
+      cam.noise += 0.008;
+      cam.camX = Math.max(0.1, Math.min(0.9, cam.camX + cam.pan));
+      if (cam.camX <= 0.1 || cam.camX >= 0.9) cam.pan *= -1;
+
+      cam.glitchTimer--;
+      if (cam.glitchTimer <= 0) {
+        cam.glitch = Math.floor(Math.random() * 8) + 3;
+        cam.glitchTimer = 120 + Math.floor(Math.random() * 300);
+      }
+      if (cam.glitch > 0) cam.glitch--;
+
+      const t = cam.noise;
+      const idata = ctx.createImageData(cW - 2, cH - 2);
+      const d = idata.data;
+
+      for (let py = 0; py < cH - 2; py++) {
+        const scanDim = (py % 2 === 0) ? 1 : 0.72;
+        for (let px = 0; px < cW - 2; px++) {
+          const nx = px / (cW - 2);
+          const ny = py / (cH - 2);
+          let n = noise2d(nx * cam.zoom + cam.camX, ny * cam.zoom + cam.camY, t);
+          n = (n + 1) / 2;
+          const bldg = Math.abs(Math.sin(nx * 6.28 * 2.3)) > 0.85 && ny > 0.3 ? 0.4 : 0;
+          const ground = ny > 0.75 ? 0.15 : 0;
+          let v = Math.floor((n * 0.55 + bldg + ground) * 160 * scanDim);
+          let glitchOff = 0;
+          if (cam.glitch > 0 && py % 7 < 2) glitchOff = Math.floor(cam.glitch * 4);
+          const i4 = (py * (cW - 2) + Math.min(cW - 3, px + glitchOff)) * 4;
+          d[i4]     = Math.min(255, v * 0.4);
+          d[i4 + 1] = Math.min(255, v * 1.1);
+          d[i4 + 2] = Math.min(255, v * 0.5);
+          d[i4 + 3] = 255;
+        }
+      }
+
+      ctx.putImageData(idata, cx + 1, cy + 1);
+      ctx.strokeStyle = cam.glitch > 0 ? '#e63946' : '#1e3a1e';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(cx + 0.5, cy + 0.5, cW - 1, cH - 1);
+      ctx.font = 'bold 10px monospace';
+      ctx.fillStyle = cam.glitch > 0 ? '#e63946' : '#22ff44';
+      ctx.fillText(cam.label, cx + 8, cy + 16);
+      const now = new Date();
+      const ts = now.toLocaleDateString('en-US') + '  ' + now.toTimeString().slice(0, 8);
+      ctx.fillText(ts, cx + 8, cy + cH - 10);
+      if (Math.floor(frame / 30) % 2 === 0) {
+        ctx.fillStyle = '#e63946';
+        ctx.beginPath();
+        ctx.arc(cx + cW - 18, cy + 12, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = cam.glitch > 0 ? '#e63946' : '#22ff44';
+        ctx.fillText('REC', cx + cW - 38, cy + 16);
+      }
+      if (cam.noise % 1 > 0.85) {
+        ctx.fillStyle = '#ffdd00';
+        ctx.fillText('MOTION', cx + cW / 2 - 22, cy + cH / 2);
+      }
+    }
+
+    function draw() {
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, W, H);
+      for (let row = 0; row < ROWS; row++)
+        for (let col = 0; col < COLS; col++)
+          drawCell(row * COLS + col, col * cW, row * cH);
+      ctx.strokeStyle = '#0a200a';
+      ctx.lineWidth = 2;
+      for (let c = 1; c < COLS; c++) {
+        ctx.beginPath(); ctx.moveTo(c * cW, 0); ctx.lineTo(c * cW, H); ctx.stroke();
+      }
+      for (let r = 1; r < ROWS; r++) {
+        ctx.beginPath(); ctx.moveTo(0, r * cH); ctx.lineTo(W, r * cH); ctx.stroke();
+      }
+      frame++;
+      requestAnimationFrame(draw);
+    }
+
+    draw();
+  })();
+  </script>
+</script-snippet>

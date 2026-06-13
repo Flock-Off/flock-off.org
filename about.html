@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About — Flock Off</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --border: #1e1e2e;
+      --accent: #e63946;
+      --accent2: #457b9d;
+      --text: #e8e8f0;
+      --muted: #7a7a9a;
+      --max: 1100px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.2rem 2rem;
+      background: rgba(10, 10, 15, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .logo span { color: var(--accent); }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 2rem;
+    }
+
+    nav a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+
+    nav a:hover { color: var(--text); }
+
+    .nav-cta {
+      background: var(--accent);
+      color: #fff !important;
+      padding: 0.5rem 1.2rem;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+
+    .nav-cta:hover { background: #c1121f !important; }
+
+    .page-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 8rem 2rem 6rem;
+    }
+
+    .section-label {
+      color: var(--accent);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    h2 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.5rem;
+    }
+
+    .page-content p {
+      color: var(--muted);
+      font-size: 1.05rem;
+      max-width: 560px;
+    }
+
+    footer p {
+      width: 100%;
+      text-align: center;
+    }
+
+    .coming-soon {
+      color: var(--accent);
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-top: 1.5rem;
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2.5rem 2rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+      width: 100%;
+    }
+
+    footer a { color: var(--muted); text-decoration: none; }
+    footer a:hover { color: var(--text); }
+
+    .nav-mobile-cta { display: none; }
+
+    @media (max-width: 768px) {
+      nav ul { display: none; }
+      .nav-mobile-cta { display: block !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="index.html" class="logo">Flock<span>Off</span></a>
+    <ul>
+      <li><a href="index.html#problem">The Problem</a></li>
+      <li><a href="index.html#action">Take Action</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="index.html#join" class="nav-cta">Join the Fight</a></li>
+    </ul>
+    <a href="index.html#join" class="nav-cta nav-mobile-cta">Join the Fight</a>
+  </nav>
+
+  <main class="page-content">
+    <div class="section-label">About</div>
+    <h2>More is on the way.</h2>
+    <p>
+      We're building out resources, tools, and a community to help you fight back in your city.
+      Sign up to be the first to know when we launch.
+    </p>
+    <p class="coming-soon">Coming Soon</p>
+  </main>
+
+  <footer>
+    <p>© 2026 Flock Off · <a href="#">Privacy Policy</a> · <a href="#">Contact</a></p>
+    <p style="margin-top: 0.5rem; font-size: 0.78rem;">The Fourth Amendment guarantees the right of the people to be secure against unreasonable searches.</p>
+  </footer>
+
+</body>
+</html>
