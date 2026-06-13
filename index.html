@@ -248,12 +248,25 @@
 
     .state-strip:hover .state-track { animation-play-state: paused; }
 
+    .state-hint {
+      display: none;
+      text-align: center;
+      font-size: 0.7rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      padding: 0.5rem 0 0.25rem;
+      background: #0d0d14;
+      border-top: 1px solid var(--border);
+    }
+
     @media (max-width: 768px) {
+      .state-hint { display: block; }
       .state-strip {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
         cursor: grab;
+        border-top: none;
       }
       .state-strip::-webkit-scrollbar { display: none; }
       .state-track { animation: none !important; }
@@ -824,6 +837,7 @@
   </section>
 
 
+  <div class="state-hint">Scroll and click for info</div>
   <div class="state-strip" id="stateStrip">
     <div class="state-track" id="stateTrack"></div>
   </div>
