@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chapters — Flock Off</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --border: #1e1e2e;
+      --accent: #e63946;
+      --accent2: #457b9d;
+      --text: #e8e8f0;
+      --muted: #7a7a9a;
+      --max: 1100px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.2rem 2rem;
+      background: rgba(10, 10, 15, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .logo span { color: var(--accent); }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 2rem;
+    }
+
+    nav a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+
+    nav a:hover { color: var(--text); }
+
+    .nav-cta {
+      background: var(--accent);
+      color: #fff !important;
+      padding: 0.5rem 1.2rem;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+
+    .nav-cta:hover { background: #c1121f !important; }
+
+    .nav-donate {
+      color: var(--accent) !important;
+      border: 1px solid var(--accent);
+      padding: 0.5rem 1.2rem;
+      border-radius: 6px;
+      font-weight: 600;
+      transition: background 0.2s, color 0.2s !important;
+    }
+
+    .nav-donate:hover {
+      background: var(--accent) !important;
+      color: #fff !important;
+    }
+
+    .nav-active { color: var(--text) !important; }
+
+    /* PAGE HERO */
+    .page-hero {
+      padding: 10rem 2rem 5rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .page-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 50% at 50% 40%, rgba(230, 57, 70, 0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .section-label {
+      color: var(--accent);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-size: clamp(2.4rem, 6vw, 4rem);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1.08;
+      margin-bottom: 1.25rem;
+    }
+
+    h1 em {
+      font-style: normal;
+      color: var(--accent);
+    }
+
+    .page-hero p {
+      color: var(--muted);
+      font-size: 1.1rem;
+      max-width: 580px;
+      margin: 0 auto;
+    }
+
+    /* CHAPTER SECTIONS */
+    .chapters-body {
+      flex: 1;
+      padding: 0 2rem 6rem;
+    }
+
+    .chapters-inner {
+      max-width: var(--max);
+      margin: 0 auto;
+    }
+
+    .chapter-section {
+      padding: 5rem 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .chapter-section:first-child {
+      border-top: none;
+    }
+
+    .chapter-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+
+    .chapter-icon {
+      flex-shrink: 0;
+      width: 56px;
+      height: 56px;
+      background: rgba(230, 57, 70, 0.1);
+      border: 1px solid rgba(230, 57, 70, 0.25);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+    }
+
+    .chapter-title-block h2 {
+      font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      margin-bottom: 0.6rem;
+    }
+
+    .chapter-title-block p {
+      color: var(--muted);
+      font-size: 1rem;
+      max-width: 620px;
+    }
+
+    /* CARDS */
+    .chapter-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .chapter-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.75rem;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .chapter-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-3px);
+    }
+
+    .chapter-card h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .chapter-card p {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    /* START CHAPTER CTA */
+    .start-chapter {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .start-chapter h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+    }
+
+    .start-chapter p {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .btn {
+      padding: 0.75rem 1.75rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: #c1121f;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 25px rgba(230, 57, 70, 0.35);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--muted);
+      background: var(--surface);
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2.5rem 2rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+      width: 100%;
+    }
+
+    footer a { color: var(--muted); text-decoration: none; }
+    footer a:hover { color: var(--text); }
+
+    .nav-mobile-cta { display: none; }
+
+    @media (max-width: 768px) {
+      nav ul { display: none; }
+      .nav-mobile-cta { display: block !important; }
+      .chapter-header { flex-direction: column; gap: 1rem; }
+      .start-chapter { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+  <script defer src="/_vercel/insights/script.js"></script>
+  <style>
+    .demo-badge {
+      position: fixed;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+      pointer-events: none;
+      padding: 3px 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-badge">Demo Site</div>
+
+  <nav>
+    <a href="index.html" class="logo">Flock<span>Off</span></a>
+    <ul>
+      <li><a href="index.html#problem">The Problem</a></li>
+      <li><a href="index.html#action">Take Action</a></li>
+      <li><a href="chapters.html" class="nav-active">Chapters</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="donate.html" class="nav-donate">Donate</a></li>
+      <li><a href="index.html#join" class="nav-cta">Join the Fight</a></li>
+    </ul>
+    <a href="index.html#join" class="nav-cta nav-mobile-cta">Join the Fight</a>
+  </nav>
+
+  <div class="page-hero">
+    <div class="section-label">Chapters</div>
+    <h1>Bring the fight to <em>your campus</em></h1>
+    <p>
+      Flock Off chapters organize students and educators to push back against surveillance
+      technology in schools and universities across the country.
+    </p>
+  </div>
+
+  <div class="chapters-body">
+    <div class="chapters-inner">
+
+      <!-- HIGH SCHOOLS -->
+      <div class="chapter-section" id="high-schools">
+        <div class="chapter-header">
+<div class="chapter-title-block">
+            <h2>High Schools</h2>
+            <p>
+              Students in K–12 schools are among the most surveilled populations in the country.
+              Flock Off high school chapters give students a platform to fight license plate readers,
+              facial recognition, and invasive monitoring tools installed on campus.
+            </p>
+          </div>
+        </div>
+
+        <div class="chapter-cards">
+          <div class="chapter-card">
+            <h3>Know Your Rights</h3>
+            <p>Learn what surveillance tools are being used in your school and what legal protections apply to you as a student.</p>
+          </div>
+          <div class="chapter-card">
+            <h3>Petition Your School Board</h3>
+            <p>We provide templates and guidance for presenting your case to administrators and elected school board members.</p>
+          </div>
+          <div class="chapter-card">
+            <h3>Build Your Chapter</h3>
+            <p>Recruit fellow students, connect with local advocacy groups, and coordinate action with chapters across the country.</p>
+          </div>
+        </div>
+
+        <div class="start-chapter">
+          <div>
+            <h3>Start a High School Chapter</h3>
+            <p>No experience needed — just a willingness to organize. We'll walk you through every step.</p>
+          </div>
+          <a href="contact.html" class="btn btn-primary">Get Started &rarr;</a>
+        </div>
+      </div>
+
+      <!-- COLLEGES -->
+      <div class="chapter-section" id="colleges">
+        <div class="chapter-header">
+<div class="chapter-title-block">
+            <h2>Colleges &amp; Universities</h2>
+            <p>
+              Universities are rapidly expanding surveillance infrastructure — from smart cameras
+              to predictive policing software. College chapters lead research, advocacy, and
+              direct organizing on campuses nationwide.
+            </p>
+          </div>
+        </div>
+
+        <div class="chapter-cards">
+          <div class="chapter-card">
+            <h3>Campus Research</h3>
+            <p>File public records requests and investigate what surveillance contracts your university has signed — and with whom.</p>
+          </div>
+          <div class="chapter-card">
+            <h3>Faculty &amp; Admin Engagement</h3>
+            <p>Work with sympathetic faculty to bring formal resolutions and policy debates to faculty senates and student governments.</p>
+          </div>
+          <div class="chapter-card">
+            <h3>Coalition Building</h3>
+            <p>Partner with other student organizations — civil liberties, privacy, racial justice — to build a broad coalition on campus.</p>
+          </div>
+        </div>
+
+        <div class="start-chapter">
+          <div>
+            <h3>Start a College Chapter</h3>
+            <p>Join a national network of students holding their institutions accountable.</p>
+          </div>
+          <a href="contact.html" class="btn btn-primary">Get Started &rarr;</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer>
+    <p>© 2026 Flock Off · <a href="#">Privacy Policy</a> · <a href="contact.html">Contact</a></p>
+    <p style="margin-top: 0.5rem; font-size: 0.78rem;">The Fourth Amendment guarantees the right of the people to be secure against unreasonable searches.</p>
+  </footer>
+
+</body>
+</html>

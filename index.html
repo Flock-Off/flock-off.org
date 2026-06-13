@@ -76,6 +76,20 @@
 
     .nav-cta:hover { background: #c1121f !important; }
 
+    .nav-donate {
+      color: var(--accent) !important;
+      border: 1px solid var(--accent);
+      padding: 0.5rem 1.2rem;
+      border-radius: 6px;
+      font-weight: 600;
+      transition: background 0.2s, color 0.2s !important;
+    }
+
+    .nav-donate:hover {
+      background: var(--accent) !important;
+      color: #fff !important;
+    }
+
     /* HERO */
     .hero {
       min-height: calc(100vh - 105px);
@@ -692,15 +706,34 @@
     }
   </style>
   <script defer src="/_vercel/insights/script.js"></script>
+  <style>
+    .demo-badge {
+      position: fixed;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+      pointer-events: none;
+      padding: 3px 10px;
+    }
+  </style>
 </head>
 <body>
+  <div class="demo-badge">Demo Site</div>
 
   <nav>
     <a href="#" class="logo">Flock<span>Off</span></a>
     <ul>
       <li><a href="#problem">The Problem</a></li>
       <li><a href="#action">Take Action</a></li>
+      <li><a href="chapters.html">Chapters</a></li>
       <li><a href="about.html">About</a></li>
+      <li><a href="donate.html" class="nav-donate">Donate</a></li>
       <li><a href="#join" class="nav-cta">Join the Fight</a></li>
     </ul>
     <a href="#join" class="nav-cta nav-mobile-cta" style="display:none;">Join the Fight</a>
@@ -734,7 +767,7 @@
       <div class="section-label">The Problem</div>
       <h2>Flock Safety is building a<br>nationwide tracking network.</h2>
       <p class="section-sub">
-        Flock Safety sells Automatic License Plate Reader cameras to police departments, sheriff's offices, and HOAs across the country — logging every vehicle that passes, with no warrant, no suspicion, and no oversight.
+        Flock Safety sells Automatic License Plate Reader (ALPR) cameras to police departments, sheriff's offices, and HOAs across the country — logging every vehicle that passes, with no warrant, no suspicion, and no oversight.
       </p>
       <div class="issues-grid">
         <div class="issue-card">
@@ -742,8 +775,8 @@
           <p>Flock cameras don't wait for a crime. They photograph and record every vehicle that drives by — permanently building a database of where you go, when you go there, and how often.</p>
         </div>
         <div class="issue-card">
-          <h3>The LEARN Network</h3>
-          <p>Flock's Law Enforcement Archival Reporting Network connects hundreds of police departments nationwide. One agency's cameras become every agency's surveillance tool — your local trip visible to departments states away.</p>
+          <h3>Nationwide AI Surveillance</h3>
+          <p>These systems don't operate in isolation. AI-powered networks link agencies across the country, turning local camera installations into a nationwide tracking infrastructure — your movements analyzed, stored, and shared without your knowledge.</p>
         </div>
         <div class="issue-card">
           <h3>No Warrant. No Suspicion. No Problem.</h3>
@@ -799,7 +832,7 @@
         <div class="step">
           <div class="step-num">04</div>
           <h3>Grow the Movement</h3>
-          <p>Share this with people who still think mass surveillance is about keeping them safe. Change minds. Build the coalition needed to win.</p>
+          <p>Share this with anyone who still thinks mass surveillance keeps them safe — or who's fed up with the government watching their every move. Build the coalition needed to win.</p>
         </div>
       </div>
     </div>
@@ -822,7 +855,7 @@
 
 
   <footer>
-    <p>© 2026 Flock Off · <a href="#">Privacy Policy</a> · <a href="#">Contact</a></p>
+    <p>© 2026 Flock Off · <a href="#">Privacy Policy</a> · <a href="contact.html">Contact</a></p>
     <p style="margin-top: 0.5rem; font-size: 0.78rem;">The Fourth Amendment guarantees the right of the people to be secure against unreasonable searches.</p>
   </footer>
 
