@@ -1,7 +1,7 @@
 """
 Entry point for the Florida council agenda scraper.
 Run directly: python main.py
-Or via cron:  0 6 * * * cd /opt/scraper && python main.py >> /var/log/scraper.log 2>&1
+Or via cron:  0 6 */5 * * cd /opt/scraper && python main.py >> /var/log/scraper.log 2>&1
 """
 import logging
 import sys

@@ -54,8 +54,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           backdropFilter: 'blur(12px)',
           borderBottom: '1px solid #1e1e2e',
         }}>
-          <a href="/index.html" style={{ display: 'flex', alignItems: 'center' }}>
-            <img src="/logo.png" alt="Flock-Off" style={{ height: 28 }} />
+          <a href="/index.html" style={{
+            fontSize: '1.4rem', fontWeight: 800,
+            letterSpacing: '-0.02em', color: '#e8e8f0', textDecoration: 'none',
+          }}>
+            Flock<span style={{ color: '#e63946' }}>Off</span>
           </a>
 
           <ul className="nav-links">
