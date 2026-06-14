@@ -921,11 +921,49 @@
         <div class="section-label" style="margin-bottom:0.5rem;">We want you!</div>
         <h2 style="font-size:clamp(2.2rem,5vw,3.5rem);color:var(--text);margin-bottom:1rem;">Join the Fight</h2>
         <p>Get updates on legislation, legal victories, and direct actions you can take to end mass surveillance.</p>
-        <form class="email-form" onsubmit="return false;">
-          <input type="email" placeholder="your@email.com" />
-          <button type="submit" class="btn btn-primary" disabled style="opacity:0.4;cursor:not-allowed;">Sign Up</button>
+        <form class="email-form" id="signupForm" onsubmit="handleSignup(event);">
+          <input type="email" id="signupEmail" placeholder="your@email.com" required />
+          <button type="submit" id="signupBtn" class="btn btn-primary">Sign Up</button>
         </form>
-        <p style="margin-top:0.75rem;font-size:0.85rem;color:var(--muted);letter-spacing:0.05em;text-transform:uppercase;">Coming Soon</p>
+        <p id="signupMsg" style="margin-top:0.75rem;font-size:0.85rem;letter-spacing:0.05em;min-height:1.2em;"></p>
+        <script>
+          async function handleSignup(e) {
+            e.preventDefault();
+            var email = document.getElementById('signupEmail').value.trim();
+            var btn   = document.getElementById('signupBtn');
+            var msg   = document.getElementById('signupMsg');
+            btn.disabled = true;
+            btn.textContent = 'Signing up…';
+            msg.style.color = '';
+            msg.textContent = '';
+            try {
+              var res = await fetch('/api/subscribe', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email }),
+              });
+              if (res.ok) {
+                msg.style.color = '#4caf50';
+                msg.textContent = 'You\'re in! We\'ll be in touch.';
+                document.getElementById('signupEmail').value = '';
+                btn.textContent = 'Sign Up';
+                btn.disabled = false;
+              } else if (res.status === 409) {
+                msg.style.color = 'var(--muted)';
+                msg.textContent = 'That email is already signed up.';
+                btn.textContent = 'Sign Up';
+                btn.disabled = false;
+              } else {
+                throw new Error();
+              }
+            } catch (_) {
+              msg.style.color = 'var(--accent)';
+              msg.textContent = 'Something went wrong — please try again.';
+              btn.textContent = 'Sign Up';
+              btn.disabled = false;
+            }
+          }
+        </script>
       </div>
     </div>
   </section>
