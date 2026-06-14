@@ -55,7 +55,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           borderBottom: '1px solid #1e1e2e',
         }}>
           <a href="/index.html" style={{ display: 'flex', alignItems: 'center' }}>
-            <img src="/logo.png" alt="Flock-Off" style={{ height: 40 }} />
+            <img src="/logo.png" alt="Flock-Off" style={{ height: 28 }} />
           </a>
 
           <ul className="nav-links">
