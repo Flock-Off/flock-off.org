@@ -28,9 +28,9 @@ echo "=== Installing Python deps ==="
 pip install -q --upgrade pip
 pip install -q -r "$SCRAPER_DIR/requirements.txt"
 
-echo "=== Installing Playwright browsers ==="
-playwright install chromium
-playwright install-deps chromium
+echo "=== Installing Playwright browsers (optional — failures are non-fatal) ==="
+playwright install chromium || echo "  ⚠  Playwright browser install failed — skipping (not needed for Legistar/CivicPlus)"
+playwright install-deps chromium || echo "  ⚠  Playwright deps install failed — skipping"
 
 echo "=== Checking .env ==="
 if [ ! -f "$SCRAPER_DIR/.env" ]; then
