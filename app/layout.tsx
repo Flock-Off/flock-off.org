@@ -63,7 +63,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <li><a href="/index.html#action">Take Action</a></li>
             <li><a href="/chapters.html">Chapters</a></li>
             <li><a href="/about.html">About</a></li>
-            <li><a href="/" className="nav-monitor">Calendar Monitor</a></li>
+            <li><a href="/monitor" className="nav-monitor">Calendar Monitor</a></li>
             <li><a href="/donate.html" className="nav-donate">Donate</a></li>
             <li><a href="/index.html#join" className="nav-cta">Join the Fight</a></li>
           </ul>
