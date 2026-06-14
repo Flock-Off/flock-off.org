@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Donate — Flock Off</title>
+  <title>About — Flock Off</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -57,7 +57,6 @@
       list-style: none;
       display: flex;
       gap: 2rem;
-      align-items: center;
     }
 
     nav a {
@@ -79,8 +78,14 @@
 
     .nav-cta:hover { background: #c1121f !important; }
 
+    .nav-monitor {
+      color: var(--accent) !important;
+      font-weight: 600;
+    }
+
+    .nav-monitor:hover { color: #fff !important; }
+
     .nav-donate {
-      background: transparent;
       color: var(--accent) !important;
       border: 1px solid var(--accent);
       padding: 0.5rem 1.2rem;
@@ -94,39 +99,14 @@
       color: #fff !important;
     }
 
-    .nav-active { color: var(--text) !important; }
-
-    /* MAIN */
     .page-content {
       flex: 1;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding: 10rem 2rem 6rem;
-    }
-
-    .donate-box {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 3.5rem;
-      max-width: 560px;
-      width: 100%;
       text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .donate-box::before {
-      content: '';
-      position: absolute;
-      top: -60px; left: 50%;
-      transform: translateX(-50%);
-      width: 500px;
-      height: 260px;
-      background: radial-gradient(ellipse, rgba(230, 57, 70, 0.12) 0%, transparent 70%);
-      pointer-events: none;
+      padding: 8rem 2rem 6rem;
     }
 
     .section-label {
@@ -138,101 +118,29 @@
       margin-bottom: 1rem;
     }
 
-    h1 {
-      font-size: clamp(1.8rem, 4vw, 2.6rem);
-      font-weight: 900;
+    h2 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
       letter-spacing: -0.02em;
-      margin-bottom: 1rem;
+      margin-bottom: 1.5rem;
     }
 
-    .donate-box > p {
+    .page-content p {
       color: var(--muted);
-      font-size: 1rem;
-      margin-bottom: 2.5rem;
-    }
-
-    /* AMOUNT BUTTONS */
-    .amount-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0.75rem;
-      margin-bottom: 1rem;
-    }
-
-    .amount-btn {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 0.85rem 0.5rem;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .amount-btn:hover,
-    .amount-btn.selected {
-      border-color: var(--accent);
-      background: rgba(230, 57, 70, 0.08);
-      color: var(--accent);
-    }
-
-    .custom-input-wrap {
-      position: relative;
-      margin-bottom: 2rem;
-    }
-
-    .custom-input-wrap span {
-      position: absolute;
-      left: 1rem;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--muted);
-      font-size: 1rem;
-    }
-
-    .custom-input {
-      width: 100%;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 0.85rem 1.2rem 0.85rem 2rem;
-      border-radius: 8px;
-      font-size: 1rem;
-      outline: none;
-      transition: border-color 0.2s;
-      text-align: left;
-    }
-
-    .custom-input::placeholder { color: var(--muted); }
-    .custom-input:focus { border-color: var(--accent); }
-
-    .donate-btn {
-      display: block;
-      width: 100%;
-      background: var(--accent);
-      color: #fff;
-      text-decoration: none;
-      padding: 1rem;
-      border-radius: 8px;
-      font-weight: 700;
       font-size: 1.05rem;
-      border: none;
-      cursor: pointer;
-      transition: all 0.2s;
-      margin-bottom: 1.25rem;
+      max-width: 560px;
     }
 
-    .donate-btn:hover {
-      background: #c1121f;
-      transform: translateY(-1px);
-      box-shadow: 0 8px 25px rgba(230, 57, 70, 0.35);
+    footer p {
+      width: 100%;
+      text-align: center;
     }
 
-    .donate-note {
-      color: var(--muted);
-      font-size: 0.8rem;
+    .coming-soon {
+      color: var(--accent);
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-top: 1.5rem;
     }
 
     footer {
@@ -252,7 +160,6 @@
     @media (max-width: 768px) {
       nav ul { display: none; }
       .nav-mobile-cta { display: block !important; }
-      .donate-box { padding: 2.5rem 1.5rem; }
     }
   </style>
   <script defer src="/_vercel/insights/script.js"></script>
@@ -343,86 +250,27 @@
       <li><a href="index.html#action">Take Action</a></li>
       <li><a href="chapters.html">Chapters</a></li>
       <li><a href="about.html">About</a></li>
-      <li><a href="donate.html" class="nav-donate nav-active">Donate</a></li>
+      <li><a href="/" class="nav-monitor">Calendar Monitor</a></li>
+      <li><a href="donate.html" class="nav-donate">Donate</a></li>
       <li><a href="index.html#join" class="nav-cta">Join the Fight</a></li>
     </ul>
     <a href="index.html#join" class="nav-cta nav-mobile-cta">Join the Fight</a>
   </nav>
 
   <main class="page-content">
-    <div class="donate-box">
-      <div class="section-label">Support the Fight</div>
-      <h1>Fund the resistance</h1>
-      <p>
-        Every dollar goes directly to establishing new chapters, expanding our infrastructure, and fighting mass surveillance programs across the country.
-      </p>
-
-      <div class="amount-grid">
-        <button class="amount-btn" onclick="selectAmount(this, '5')">$5</button>
-        <button class="amount-btn selected" onclick="selectAmount(this, '10')">$10</button>
-        <button class="amount-btn" onclick="selectAmount(this, '25')">$25</button>
-        <button class="amount-btn" onclick="selectAmount(this, '50')">$50</button>
-        <button class="amount-btn" onclick="selectAmount(this, '100')">$100</button>
-        <button class="amount-btn" onclick="selectAmount(this, '250')">$250</button>
-      </div>
-
-      <div class="custom-input-wrap">
-        <span>$</span>
-        <input class="custom-input" id="customAmount" type="number" min="1" placeholder="Custom amount" oninput="clearSelected()" />
-      </div>
-
-      <a href="#" class="donate-btn" id="donateBtn" onclick="handleDonate(event)">
-        Donate $50 &rarr;
-      </a>
-
-      <p class="donate-note">
-        Secure payment via Stripe. Flock Off is a 501(c)(4) — donations are not tax-deductible.
-      </p>
-    </div>
+    <div class="section-label">About</div>
+    <h2>More is on the way.</h2>
+    <p>
+      We're building out resources, tools, and a community to help you fight back in your city.
+      Sign up to be the first to know when we launch.
+    </p>
+    <p class="coming-soon">Coming Soon</p>
   </main>
 
   <footer>
     <p>© 2026 Flock Off · <a href="#">Privacy Policy</a> · <a href="contact.html">Contact</a></p>
     <p style="margin-top: 0.5rem; font-size: 0.78rem;">The Fourth Amendment guarantees the right of the people to be secure against unreasonable searches.</p>
   </footer>
-
-  <script>
-    const STRIPE_LINK = '#'; // Replace with your Stripe Payment Link URL
-
-    let selectedAmount = '10';
-
-    function selectAmount(btn, amount) {
-      document.querySelectorAll('.amount-btn').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-      selectedAmount = amount;
-      document.getElementById('customAmount').value = '';
-      updateBtn(amount);
-    }
-
-    function clearSelected() {
-      document.querySelectorAll('.amount-btn').forEach(b => b.classList.remove('selected'));
-      selectedAmount = null;
-      const val = document.getElementById('customAmount').value;
-      updateBtn(val || null);
-    }
-
-    function updateBtn(amount) {
-      const btn = document.getElementById('donateBtn');
-      btn.textContent = amount ? `Donate $${amount} →` : 'Donate →';
-    }
-
-    function handleDonate(e) {
-      e.preventDefault();
-      const custom = document.getElementById('customAmount').value;
-      const amount = custom || selectedAmount;
-      if (!amount || amount < 1) return;
-      // Once you have a Stripe Payment Link, append ?prefilled_amount=<cents> or just redirect
-      window.location.href = STRIPE_LINK;
-    }
-
-    // Init
-    updateBtn('10');
-  </script>
 
   <script>
     (function() {
