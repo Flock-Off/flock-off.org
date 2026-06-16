@@ -47,8 +47,8 @@ echo "=== Seeding municipalities ==="
 cd "$SCRAPER_DIR"
 $PYTHON seed_municipalities.py
 
-echo "=== Installing cron job (every 5 days at 06:00 UTC) ==="
-CRON_LINE="0 6 */5 * * cd $SCRAPER_DIR && .venv/bin/python main.py >> $LOG_FILE 2>&1"
+echo "=== Installing cron job (every 2 days at 06:00 UTC) ==="
+CRON_LINE="0 6 */2 * * cd $SCRAPER_DIR && .venv/bin/python main.py >> $LOG_FILE 2>&1"
 # Replace any existing scraper entry so re-runs always update the schedule
 ( crontab -l 2>/dev/null | grep -vF "$SCRAPER_DIR/main.py"; echo "$CRON_LINE" ) | crontab -
 
@@ -56,6 +56,6 @@ echo ""
 echo "=== Deploy complete ==="
 echo "  Scraper dir : $SCRAPER_DIR"
 echo "  Logs        : $LOG_FILE"
-echo "  Schedule    : every 5 days at 06:00 UTC"
+echo "  Schedule    : every 2 days at 06:00 UTC"
 echo ""
 echo "  To run now  : cd $SCRAPER_DIR && .venv/bin/python main.py"

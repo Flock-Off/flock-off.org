@@ -7,6 +7,7 @@ type SurveillanceMeeting = {
   meeting_id: string
   municipality: string
   county: string
+  entity_type: string
   title: string
   meeting_date: string
   meeting_time: string | null
@@ -23,6 +24,7 @@ type Municipality = {
   name: string
   county: string
   platform: string
+  entity_type: string
   active: boolean
 }
 
@@ -62,6 +64,7 @@ function AlertCard({ meeting }: { meeting: SurveillanceMeeting }) {
   const dateStr   = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
   const daysUntil = Math.ceil((date.getTime() - Date.now()) / 86400000)
   const isUrgent  = daysUntil >= 0 && daysUntil <= 7
+  const isSchool  = meeting.entity_type === 'school_district'
 
   return (
     <div style={{
@@ -72,8 +75,13 @@ function AlertCard({ meeting }: { meeting: SurveillanceMeeting }) {
       {/* header row */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' as const }}>
         <div style={{ minWidth: 0, flex: 1 }}>
-          <div style={{ fontSize: 11, color: '#7a7a9a', textTransform: 'uppercase' as const, letterSpacing: '0.08em', marginBottom: 4 }}>
-            {meeting.county} County · {meeting.municipality}
+          <div style={{ fontSize: 11, color: '#7a7a9a', textTransform: 'uppercase' as const, letterSpacing: '0.08em', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span>{meeting.county} County · {meeting.municipality}</span>
+            {isSchool && (
+              <span style={{ background: 'rgba(99,102,241,0.15)', color: '#818cf8', fontSize: 10, fontWeight: 700, padding: '1px 7px', borderRadius: 4, letterSpacing: '0.05em' }}>
+                SCHOOL DISTRICT
+              </span>
+            )}
           </div>
           <div style={{ fontSize: 16, fontWeight: 700, color: '#e8e8f0', marginBottom: 4, lineHeight: 1.3 }}>
             {meeting.title}
@@ -125,28 +133,87 @@ function AlertCard({ meeting }: { meeting: SurveillanceMeeting }) {
   )
 }
 
+function EntityTable({ rows, label }: { rows: Municipality[], label: string }) {
+  const platformCounts = rows.reduce((acc, m) => {
+    acc[m.platform] = (acc[m.platform] ?? 0) + 1
+    return acc
+  }, {} as Record<string, number>)
+
+  return (
+    <div style={{ marginBottom: 48 }}>
+      <h2 style={{ fontSize: 17, fontWeight: 800, margin: '0 0 14px', letterSpacing: '-0.01em' }}>
+        {label}
+        <span style={{ marginLeft: 10, fontSize: 13, color: '#7a7a9a', fontWeight: 400 }}>
+          {Object.entries(platformCounts).map(([p, n]) => `${n} ${p}`).join(' · ')}
+        </span>
+      </h2>
+      <div style={{ border: '1px solid #1e1e2e', borderRadius: 12, overflowX: 'auto' as const }}>
+        <table className="muni-table" style={{ width: '100%', borderCollapse: 'collapse' as const, fontSize: 13 }}>
+          <thead>
+            <tr style={{ background: '#111118', borderBottom: '1px solid #1e1e2e' }}>
+              {['Name', 'County', 'Platform'].map(h => (
+                <th key={h} style={{
+                  padding: '10px 16px', textAlign: 'left' as const,
+                  color: '#7a7a9a', fontWeight: 700,
+                  textTransform: 'uppercase' as const, fontSize: 11, letterSpacing: '0.08em',
+                  whiteSpace: 'nowrap' as const,
+                }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((m, i) => (
+              <tr key={m.id} style={{
+                borderBottom: i < rows.length - 1 ? '1px solid #1e1e2e' : 'none',
+                background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)',
+              }}>
+                <td style={{ padding: '9px 16px', color: '#e8e8f0' }}>{m.name}</td>
+                <td style={{ padding: '9px 16px', color: '#7a7a9a', whiteSpace: 'nowrap' as const }}>{m.county}</td>
+                <td style={{ padding: '9px 16px' }}>
+                  <span style={{
+                    fontSize: 11, padding: '2px 8px', borderRadius: 4, fontWeight: 700, letterSpacing: '0.04em',
+                    background: m.platform === 'legistar' ? 'rgba(230,57,70,0.12)'
+                              : m.platform === 'boarddocs' ? 'rgba(99,102,241,0.12)'
+                              : 'rgba(122,122,154,0.12)',
+                    color: m.platform === 'legistar' ? '#e63946'
+                         : m.platform === 'boarddocs' ? '#818cf8'
+                         : '#7a7a9a',
+                    whiteSpace: 'nowrap' as const,
+                  }}>{m.platform}</span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
 export default function Dashboard() {
-  const [alerts,         setAlerts]         = useState<SurveillanceMeeting[]>([])
-  const [municipalities, setMunicipalities]  = useState<Municipality[]>([])
-  const [meetingCount,   setMeetingCount]    = useState(0)
-  const [loading,        setLoading]         = useState(true)
-  const [error,          setError]           = useState<string | null>(null)
+  const [alerts,          setAlerts]          = useState<SurveillanceMeeting[]>([])
+  const [municipalities,  setMunicipalities]  = useState<Municipality[]>([])
+  const [schoolDistricts, setSchoolDistricts] = useState<Municipality[]>([])
+  const [meetingCount,    setMeetingCount]    = useState(0)
+  const [loading,         setLoading]         = useState(true)
+  const [error,           setError]           = useState<string | null>(null)
 
   useEffect(() => {
     Promise.all([
       sbFetch('surveillance_meetings?select=*&order=meeting_date'),
-      sbFetch('municipalities?select=*&order=name'),
+      sbFetch('municipalities?select=*&entity_type=eq.municipality&order=name'),
+      sbFetch('municipalities?select=*&entity_type=eq.school_district&order=name'),
       sbCount('meetings'),
     ])
-      .then(([a, m, c]) => { setAlerts(a); setMunicipalities(m); setMeetingCount(c) })
+      .then(([a, m, sd, c]) => {
+        setAlerts(a)
+        setMunicipalities(m)
+        setSchoolDistricts(sd)
+        setMeetingCount(c)
+      })
       .catch(e => setError(String(e)))
       .finally(() => setLoading(false))
   }, [])
-
-  const platformCounts = municipalities.reduce((acc, m) => {
-    acc[m.platform] = (acc[m.platform] ?? 0) + 1
-    return acc
-  }, {} as Record<string, number>)
 
   if (loading) return (
     <div style={{ color: '#7a7a9a', textAlign: 'center', paddingTop: 80, fontSize: 14 }}>Loading…</div>
@@ -160,7 +227,6 @@ export default function Dashboard() {
       <style>{`
         @media (max-width: 600px) {
           .stats-grid { grid-template-columns: 1fr 1fr !important; }
-          .stats-grid .stat-third { grid-column: 1 / -1; }
           .muni-table td:last-child, .muni-table th:last-child { display: none; }
         }
       `}</style>
@@ -182,22 +248,23 @@ export default function Dashboard() {
           <span style={{ color: '#7a7a9a', fontWeight: 400, fontSize: '0.45em', verticalAlign: 'middle', letterSpacing: '0.05em' }}>V1</span>
         </h1>
         <p style={{ color: '#7a7a9a', marginTop: 8, fontSize: 14 }}>
-          Monitoring {municipalities.length} FL municipalities for surveillance tech agenda items
+          Monitoring {municipalities.length} FL municipalities and {schoolDistricts.length} school districts for surveillance tech agenda items
         </p>
       </div>
 
       {/* Stats */}
       <div className="stats-grid" style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(3, 1fr)',
+        gridTemplateColumns: 'repeat(4, 1fr)',
         gap: 12, marginBottom: 36,
       }}>
         {[
-          { label: 'Municipalities Monitored', value: municipalities.length, cls: '' },
-          { label: 'Meetings Scraped',         value: meetingCount,          cls: '' },
-          { label: 'Active Alerts',            value: alerts.length,         cls: 'stat-third' },
+          { label: 'Cities & Counties',    value: municipalities.length  },
+          { label: 'School Districts',     value: schoolDistricts.length },
+          { label: 'Meetings Scraped',     value: meetingCount           },
+          { label: 'Active Alerts',        value: alerts.length          },
         ].map(s => (
-          <div key={s.label} className={s.cls} style={{
+          <div key={s.label} style={{
             background: '#111118', border: '1px solid #1e1e2e',
             borderRadius: 12, padding: '16px 20px',
           }}>
@@ -229,49 +296,10 @@ export default function Dashboard() {
       </div>
 
       {/* Municipalities table */}
-      <div>
-        <h2 style={{ fontSize: 17, fontWeight: 800, margin: '0 0 14px', letterSpacing: '-0.01em' }}>
-          Monitored Municipalities
-          <span style={{ marginLeft: 10, fontSize: 13, color: '#7a7a9a', fontWeight: 400 }}>
-            {Object.entries(platformCounts).map(([p, n]) => `${n} ${p}`).join(' · ')}
-          </span>
-        </h2>
-        <div style={{ border: '1px solid #1e1e2e', borderRadius: 12, overflowX: 'auto' as const }}>
-          <table className="muni-table" style={{ width: '100%', borderCollapse: 'collapse' as const, fontSize: 13 }}>
-            <thead>
-              <tr style={{ background: '#111118', borderBottom: '1px solid #1e1e2e' }}>
-                {['Municipality', 'County', 'Platform'].map(h => (
-                  <th key={h} style={{
-                    padding: '10px 16px', textAlign: 'left' as const,
-                    color: '#7a7a9a', fontWeight: 700,
-                    textTransform: 'uppercase' as const, fontSize: 11, letterSpacing: '0.08em',
-                    whiteSpace: 'nowrap' as const,
-                  }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {municipalities.map((m, i) => (
-                <tr key={m.id} style={{
-                  borderBottom: i < municipalities.length - 1 ? '1px solid #1e1e2e' : 'none',
-                  background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)',
-                }}>
-                  <td style={{ padding: '9px 16px', color: '#e8e8f0' }}>{m.name}</td>
-                  <td style={{ padding: '9px 16px', color: '#7a7a9a', whiteSpace: 'nowrap' as const }}>{m.county}</td>
-                  <td style={{ padding: '9px 16px' }}>
-                    <span style={{
-                      fontSize: 11, padding: '2px 8px', borderRadius: 4, fontWeight: 700, letterSpacing: '0.04em',
-                      background: m.platform === 'legistar' ? 'rgba(230,57,70,0.12)' : 'rgba(122,122,154,0.12)',
-                      color: m.platform === 'legistar' ? '#e63946' : '#7a7a9a',
-                      whiteSpace: 'nowrap' as const,
-                    }}>{m.platform}</span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <EntityTable rows={municipalities} label="Monitored Municipalities" />
+
+      {/* School Districts table */}
+      <EntityTable rows={schoolDistricts} label="Monitored School Districts" />
     </>
   )
 }
