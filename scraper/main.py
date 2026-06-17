@@ -7,7 +7,7 @@ import logging
 import sys
 
 import db
-from scrapers import legistar, civicplus, playwright_scraper, novusagenda, hyland, boarddocs
+from scrapers import legistar, civicplus, playwright_scraper, novusagenda, hyland, boarddocs, iqm2
 
 logging.basicConfig(
     level=logging.INFO,
@@ -22,6 +22,7 @@ PLATFORM_MAP = {
     "novusagenda": novusagenda.scrape_municipality,
     "hyland":      hyland.scrape_municipality,
     "boarddocs":   boarddocs.scrape_municipality,
+    "iqm2":        iqm2.scrape_municipality,
     "granicus":    None,
     "custom":      playwright_scraper.scrape_municipality,
 }
