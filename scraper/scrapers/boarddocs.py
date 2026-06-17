@@ -1,21 +1,25 @@
 """
 BoardDocs scraper for FL school districts.
 
-Board URLs follow: https://go.boarddocs.com/fl/{slug}/Board.nsf/Public
+Board URLs: https://go.boarddocs.com/fl/{slug}/Board.nsf/Public
 
-BoardDocs has a public REST API backed by an IBM Domino server:
-  POST /Board.nsf/BD-GetMeetings-Public  → JSON meeting list
-  GET  /Board.nsf/BD-GetAgendaDoc-Public?openagent&id={unique_id}  → HTML agenda
+Strategy:
+  1. Fetch the meeting list via the public SEO endpoint (plain httpx, no auth).
+     GET /Board.nsf/BD-GETMeetingsListForSEO?open  → JSON list of all meetings.
+     Fields: Name, Description, Unique (12-char ID), Date (ISO 8601).
 
-Meeting list payload: {"current_meeting_id": ""}
-Each meeting entry contains at least: unique_id, numberdate, name
+  2. For each upcoming meeting, navigate to its detail page inside a single
+     Playwright browser session using hash routing (#btdetails/{unique}).
+     Hash changes are client-side so CloudFront sees only one initial page load.
+
+  3. Extract the rendered inner text for keyword scanning.
 """
 import logging
 import re
 from datetime import date, datetime, timedelta
 
 import httpx
-from bs4 import BeautifulSoup
+from playwright.sync_api import sync_playwright, TimeoutError as PWTimeout
 
 from config import DAYS_AHEAD, find_keyword_matches
 import db
@@ -23,19 +27,15 @@ import db
 _DAYS_AHEAD = max(DAYS_AHEAD, 365)
 logger = logging.getLogger(__name__)
 
-_DATE_FMTS = ["%Y%m%d", "%Y-%m-%d", "%m/%d/%Y", "%m/%d/%y"]
-
 
 def _base(municipality: dict) -> str:
     url = (municipality.get("calendar_url") or "").rstrip("/")
-    # url is like https://go.boarddocs.com/fl/{slug}/Board.nsf/Public
-    # We need the Board.nsf root, e.g. https://go.boarddocs.com/fl/{slug}/Board.nsf
     return re.sub(r"/Public$", "", url, flags=re.IGNORECASE)
 
 
 def _parse_date(raw: str) -> date | None:
-    s = str(raw).strip()
-    for fmt in _DATE_FMTS:
+    s = str(raw).strip().replace("Z", "+00:00")
+    for fmt in ("%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%dT%H:%M:%S", "%Y%m%d", "%m/%d/%Y", "%m/%d/%y"):
         try:
             return datetime.strptime(s, fmt).date()
         except ValueError:
@@ -43,123 +43,82 @@ def _parse_date(raw: str) -> date | None:
     return None
 
 
-def _get_meetings(board_url: str) -> list[dict]:
-    """
-    POST to BD-GetMeetings-Public and return upcoming meetings.
-    Falls back to parsing the public HTML page if the API fails.
-    """
+def _fetch_meeting_list(board_url: str) -> list[dict]:
+    """Fetch all meetings from the public SEO endpoint via plain httpx."""
+    url = f"{board_url}/BD-GETMeetingsListForSEO?open"
     today  = date.today()
     cutoff = today + timedelta(days=_DAYS_AHEAD)
-    meetings: list[dict] = []
-
-    api_url = f"{board_url}/BD-GetMeetings-Public"
+    upcoming = []
     try:
-        r = httpx.post(
-            api_url,
-            data={"current_meeting_id": ""},
-            headers={"User-Agent": "Mozilla/5.0", "Accept": "application/json, */*"},
+        r = httpx.get(
+            url,
+            headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                "Referer": f"{board_url}/Public",
+            },
             timeout=30,
             follow_redirects=True,
         )
         r.raise_for_status()
-        data = r.json()
-        # API returns a list of meeting objects
-        for mtg in data:
-            raw_date = mtg.get("numberdate") or mtg.get("date") or mtg.get("unique_id", "")[:8]
+        for mtg in r.json():
+            raw_date = mtg.get("Date", "")
             mtg_date = _parse_date(raw_date)
-            if mtg_date is None:
+            if mtg_date is None or mtg_date < today or mtg_date > cutoff:
                 continue
-            if mtg_date < today or mtg_date > cutoff:
-                continue
-
-            uid    = mtg.get("unique_id", "")
-            name   = mtg.get("name", "Board Meeting") or "Board Meeting"
-            agenda = f"{board_url}/BD-GetAgendaDoc-Public?openagent&id={uid}" if uid else None
-
-            meetings.append({
-                "external_id":  uid or f"bd-{raw_date}",
-                "title":        name,
+            uid = str(mtg.get("Unique", "")).strip()
+            upcoming.append({
+                "external_id":  uid or f"bd-{raw_date[:10]}",
+                "title":        mtg.get("Name") or "Board Meeting",
                 "meeting_date": mtg_date.isoformat(),
                 "location":     None,
-                "agenda_url":   agenda,
-                "_bd_uid":      uid,
-                "_board_url":   board_url,
+                "agenda_url":   f"{board_url}/Public#btdetails/{uid}" if uid else f"{board_url}/Public",
+                "_uid":         uid,
             })
     except Exception as exc:
-        logger.debug("[boarddocs] API failed for %s: %s — trying HTML fallback", board_url, exc)
-        meetings = _html_fallback(board_url, today, cutoff)
-
-    return meetings
+        logger.warning("[boarddocs] SEO endpoint failed for %s: %s", board_url, exc)
+    return upcoming
 
 
-def _html_fallback(board_url: str, today: date, cutoff: date) -> list[dict]:
-    """Parse upcoming meetings from the public landing page HTML."""
-    meetings: list[dict] = []
-    pub_url = f"{board_url}/Public"
-    try:
-        r = httpx.get(
-            pub_url,
-            headers={"User-Agent": "Mozilla/5.0"},
-            timeout=30,
-            follow_redirects=True,
+def _fetch_agendas_playwright(board_url: str, meetings: list[dict], name: str) -> None:
+    """
+    Open one Playwright session per district; navigate to each meeting via
+    hash routing (client-side, no new CloudFront requests) and extract text.
+    Stores agenda_text back into each meeting dict in-place.
+    """
+    public_url = f"{board_url}/Public"
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        page = browser.new_page(
+            viewport={"width": 1400, "height": 900},
         )
-        r.raise_for_status()
-        soup = BeautifulSoup(r.text, "lxml")
-        # BoardDocs renders meeting links in <a> tags containing the unique ID
-        # Pattern: /Board.nsf/Public#btdetails/{unique_id}
-        id_re = re.compile(r"#btdetails/([A-Z0-9]{16,})", re.IGNORECASE)
-        seen: set[str] = set()
+        try:
+            page.goto(public_url, wait_until="networkidle", timeout=60_000)
+        except PWTimeout:
+            logger.warning("[boarddocs] %s: initial page load timeout", name)
+            browser.close()
+            return
 
-        for a in soup.find_all("a", href=True):
-            m = id_re.search(a["href"])
-            if not m:
+        html_check = page.content()
+        if "403" in html_check[:500] or len(html_check) < 2_000:
+            logger.warning("[boarddocs] %s: blocked or empty page", name)
+            browser.close()
+            return
+
+        for m in meetings:
+            uid = m.get("_uid", "")
+            if not uid:
                 continue
-            uid = m.group(1)
-            if uid in seen:
-                continue
-            seen.add(uid)
+            try:
+                # Hash navigation is client-side; Angular router handles it.
+                page.evaluate(f"window.location.hash = '#btdetails/{uid}'")
+                page.wait_for_load_state("networkidle", timeout=15_000)
+                text = page.locator("body").inner_text()
+                m["_agenda_text"] = text
+            except Exception as exc:
+                logger.debug("[boarddocs] %s: agenda nav failed for %s: %s", name, uid, exc)
+                m["_agenda_text"] = ""
 
-            # Date is usually embedded in the text near the link or in the uid itself
-            text = a.get_text(" ", strip=True)
-            mtg_date: date | None = None
-            # Try to find a date in surrounding text
-            date_m = re.search(r"(\d{1,2}/\d{1,2}/\d{2,4})", text)
-            if date_m:
-                mtg_date = _parse_date(date_m.group(1))
-
-            if mtg_date is None:
-                continue
-            if mtg_date < today or mtg_date > cutoff:
-                continue
-
-            meetings.append({
-                "external_id":  uid,
-                "title":        text or "Board Meeting",
-                "meeting_date": mtg_date.isoformat(),
-                "location":     None,
-                "agenda_url":   f"{board_url}/BD-GetAgendaDoc-Public?openagent&id={uid}",
-                "_bd_uid":      uid,
-                "_board_url":   board_url,
-            })
-    except Exception as exc:
-        logger.warning("[boarddocs] HTML fallback failed for %s: %s", board_url, exc)
-
-    return meetings
-
-
-def _fetch_agenda_text(agenda_url: str) -> str:
-    try:
-        r = httpx.get(
-            agenda_url,
-            headers={"User-Agent": "Mozilla/5.0"},
-            timeout=30,
-            follow_redirects=True,
-        )
-        r.raise_for_status()
-        return BeautifulSoup(r.text, "lxml").get_text(" ", strip=True)
-    except Exception as exc:
-        logger.debug("[boarddocs] Agenda fetch failed %s: %s", agenda_url, exc)
-        return ""
+        browser.close()
 
 
 def scrape_municipality(municipality: dict) -> None:
@@ -172,10 +131,13 @@ def scrape_municipality(municipality: dict) -> None:
     muni_id = municipality["id"]
     logger.info("[boarddocs] Scraping %s", name)
 
-    meetings = _get_meetings(board_url)
+    meetings = _fetch_meeting_list(board_url)
     if not meetings:
         logger.debug("[boarddocs] %s: no upcoming meetings in window", name)
         return
+
+    logger.info("[boarddocs] %s: %d upcoming meetings — fetching agendas", name, len(meetings))
+    _fetch_agendas_playwright(board_url, meetings, name)
 
     for m in meetings:
         try:
@@ -184,9 +146,7 @@ def scrape_municipality(municipality: dict) -> None:
             logger.warning("[boarddocs] %s: upsert meeting failed: %s", name, exc)
             continue
 
-        if not m.get("agenda_url"):
-            continue
-        agenda_text = _fetch_agenda_text(m["agenda_url"])
+        agenda_text = m.get("_agenda_text", "")
         if not agenda_text:
             continue
 
